@@ -1,27 +1,26 @@
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..','..'))
-
-
 import unittest
-import sdr_utils
+import numpy as np
+import sys
+import os
 
-import commpy
-from commpy.utilities import bitarray2dec, dec2bitarray
-from simulation.modem import Modem, ModemParameter, get_gfdm_preable_based, get_ofdm_pilot_based, get_ofdm_preamble_based
-import numpy as np 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import simulation.modem.util as util
+from modem import Modem, ModemParameter, get_gfdm_preamble_based, get_ofdm_pilot_based, get_ofdm_preamble_based
+
+import modem.util as util
+
 
 def norm_complex(data):
     max_val = max( max(abs(data.real)),max(abs(data.imag)) )
     if max_val > 0:
         return data / max_val
-    else: 
+    else:
         return data
 
-class TestModem(unittest.TestCase):   
+
+class TestModem(unittest.TestCase):
     def test_gfdm_b_1(self):
-        p = get_gfdm_preable_based()
+        p = get_gfdm_preamble_based()
         m = Modem(p)
         self._test_modem(m)
 
@@ -29,7 +28,7 @@ class TestModem(unittest.TestCase):
         p = get_ofdm_preamble_based()
         m = Modem(p)
         self._test_modem(m)
-        
+
     def test_ofdm_b_2(self):
         p = get_ofdm_preamble_based()
         p.B = 2
@@ -65,25 +64,25 @@ class TestModem(unittest.TestCase):
         self.assertEqual(np.shape(data["qam_demapper"]),(modem.bits_per_frame,) )
         self.assertEqual(np.shape(data["decoder"]),(modem.bytes_per_frame,) )
 
-        np.testing.assert_array_equal(data["sync"][1], p.fullpreamble) 
+        np.testing.assert_array_equal(data["sync"][1], p.fullpreamble)
         for b in range(p.B):
             np.testing.assert_array_equal(
                 data["sync"][0][b], data["frame_multiplexer"][p.Ncp +p.Npreamble_cp_cs +np.arange(p.Npayload)+b*p.Npayload_cp_cs]
-            ) 
-            
+            )
+
             np.testing.assert_array_almost_equal(
-                norm_complex(data["channel_est_eq"][b]), 
+                norm_complex(data["channel_est_eq"][b]),
                 norm_complex(np.fft.fft(data["frame_multiplexer"][p.Ncp +p.Npreamble_cp_cs +np.arange(p.Npayload)+b*p.Npayload_cp_cs]))
             )
 
         np.testing.assert_array_almost_equal(
             data["phase_corrector"], data["qam_mapper"]
-        ) 
-        np.testing.assert_array_equal(data["bytes_in"], data["decoder"]) 
-        
- 
+        )
+        np.testing.assert_array_equal(data["bytes_in"], data["decoder"])
+
+
 
 
 if __name__ == "__main__":
     unittest.main()
-    
+

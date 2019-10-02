@@ -1,10 +1,6 @@
 import unittest
 import numpy as np
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import channel as Channel
-# from waveform import get_random
+from modem.util.channel import Channel
 
 
 def get_random(samples=2048):
@@ -14,7 +10,7 @@ def get_random(samples=2048):
 
 class test_channel(unittest.TestCase):
     def setUp(self):
-        self.ch = Channel.Channel()
+        self.ch = Channel()
 
     def test_awgn(self):
         data_in = get_random(1024 * 1000)
